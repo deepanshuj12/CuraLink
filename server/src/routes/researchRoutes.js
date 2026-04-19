@@ -39,7 +39,7 @@ function formatRankedLinks(publications = [], clinicalTrials = []) {
     .filter((item) => Boolean(item.url))
     .sort((a, b) => b.rank - a.rank);
 
-  return links.slice(0, 3);
+  return links;
 }
 
 router.post("/chat", authOptional, async (req, res, next) => {
