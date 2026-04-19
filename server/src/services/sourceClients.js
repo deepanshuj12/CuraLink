@@ -41,7 +41,8 @@ async function fetchOpenAlex(query, pages = 2, perPage = 100) {
             .filter(Boolean),
           year: work.publication_year || null,
           source: "OpenAlex",
-          url: work.primary_location?.landing_page_url || work.id,
+          // url: work.primary_location?.landing_page_url || work.id,
+          url: work.id,
           snippet: abstract.slice(0, 260) || work.title || "",
         };
       })
