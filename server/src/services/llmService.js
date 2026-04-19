@@ -26,18 +26,52 @@ function buildConversationContext(history = []) {
 function sanitizeStructuredAnswer(answer, allowedUrls = []) {
   if (!answer || typeof answer !== "string") return answer;
 
-  const allowedSet = new Set(allowedUrls.filter(Boolean));
+  const normalize = (url) =>
+    url
+      ?.replace(/[\)\]\.,;:!?]+$/, "")
+      ?.replace(/\/+$/, "")
+      ?.trim();
+
+  const allowedSet = new Set(
+    allowedUrls.filter(Boolean).map(normalize)
+  );
+
   const urlRegex = /(https?:\/\/[^\s)]+)/g;
 
   return answer.replace(urlRegex, (match) => {
-    const normalized = match.replace(/[\)\.\],;:!?]+$/, "");
-    if (allowedSet.has(normalized)) return match;
-    if (normalized.includes("pubmed.ncbi.nlm.nih.gov") || normalized.includes("ncbi.nlm.nih.gov") || normalized.includes("openalex.org") || normalized.includes("clinicaltrials.gov")) {
-      return match;
+    const cleaned = normalize(match);
+
+    if (allowedSet.has(cleaned)) {
+      return cleaned; // ensures valid clickable link
     }
+
+    if (
+      cleaned.includes("pubmed.ncbi.nlm.nih.gov") ||
+      cleaned.includes("ncbi.nlm.nih.gov") ||
+      cleaned.includes("openalex.org") ||
+      cleaned.includes("clinicaltrials.gov")
+    ) {
+      return cleaned;
+    }
+
     return "";
   });
 }
+// function sanitizeStructuredAnswer(answer, allowedUrls = []) {
+//   if (!answer || typeof answer !== "string") return answer;
+
+//   const allowedSet = new Set(allowedUrls.filter(Boolean));
+//   const urlRegex = /(https?:\/\/[^\s)]+)/g;
+
+//   return answer.replace(urlRegex, (match) => {
+//     const normalized = match.replace(/[\)\.\],;:!?]+$/, "");
+//     if (allowedSet.has(normalized)) return match;
+//     if (normalized.includes("pubmed.ncbi.nlm.nih.gov") || normalized.includes("ncbi.nlm.nih.gov") || normalized.includes("openalex.org") || normalized.includes("clinicaltrials.gov")) {
+//       return match;
+//     }
+//     return "";
+//   });
+// }
 
 async function generateStructuredAnswer(context, publications, trials) {
   if (!process.env.GROQ_API_KEY) {
@@ -49,15 +83,19 @@ You are a medical research assistant.
 
 STRICT RULES:
 - Do NOT use the patient's name or location as a generic example.
-- Do NOT use other sources outside of OpenAlex, PubMed, and ClinicalTrials.gov
+- Use ONLY provided sources: OpenAlex, PubMed, and ClinicalTrials.gov.
 - Do NOT hallucinate.
 - If evidence is weak → explicitly say so.
 - Use neutral phrasing such as "people with diabetes" or "patients with lung cancer" when describing the condition.
+- Use simple plain text section headings like "Condition Overview:" and "Research Insights:".
 - Write full sentences and do not cut off content mid-sentence or mid-reference.
+- ALWAYS include only the actual URLs from the provided sources in the relevant section.
+- Do not invent journal names, sites, or citations.
+- Do not include any links or sources from outside the provided citations.
 - Allowed domains: openalex.org, pubmed.ncbi.nlm.nih.gov, ncbi.nlm.nih.gov, clinicaltrials.gov.
 - If you cannot back a sentence with a provided source, omit it.
 - Use up to 6 citations total.
-- If clinical trials are available, include links in the clinical trial section.
+- If clinical trials are available, include trial links in addition to the 6-link cap.
 - Don't ask the user to look for clinical trials themselves; if none are found, say so.
 Output EXACTLY:
 
@@ -87,13 +125,14 @@ ${topTrials.map(makeCompactSource).join("\n")}
 
 Instructions:
 - Use prior conversation context, but do not restate the full original input.
-- Do NOT use other sources outside of OpenAlex, PubMed, and ClinicalTrials.gov
+- Use ONLY provided sources: OpenAlex, PubMed, and ClinicalTrials.gov.
 - Make Condition Overview the main response section for this follow-up.
 - Other headings may be brief or omitted if they do not add value.
 - Choose only the best 3 links for the answer.
 - Don't ask user to look for clinical trials themselves, if found nothing say so.
 - Ground every claim in sources.
 - Mention 3 key findings.
+- Include trial status if relevant.
 `;
   } else {
     userPrompt = `${conversationContext}
