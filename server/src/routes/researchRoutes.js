@@ -9,12 +9,17 @@ const { generateStructuredAnswer } = require("../services/llmService");
 
 const router = express.Router();
 
+
 function formatQuoteItems(publications = []) {
   return publications.map((item) => ({
     quote: item.snippet || item.abstract || "No summary snippet available.",
     title: item.title,
+    authors: item.authors || [],
+    year: item.year || null,
+    platform: item.source || "Unknown",
+    source: item.source || "Unknown",
     url: item.url,
-    source: item.source,
+    curl: item.url,
     rank: item.score || 0,
   }));
 }
@@ -22,15 +27,27 @@ function formatQuoteItems(publications = []) {
 function formatRankedLinks(publications = [], clinicalTrials = []) {
   const links = [
     ...publications.map((item) => ({
-      label: `${item.title} • ${item.source}`,
+      title: item.title,
+      authors: item.authors || [],
+      year: item.year || null,
+      platform: item.source || "Unknown",
+      source: item.source || "Unknown",
       url: item.url,
+      curl: item.url,
+      label: `${item.title} • ${item.source}`,
       rank: item.score || 0,
       type: "publication",
       snippet: item.snippet || item.abstract?.slice(0, 120) || "",
     })),
     ...clinicalTrials.map((item) => ({
-      label: `${item.title} • ${item.source} • ${item.recruitingStatus || "UNKNOWN"}`,
+      title: item.title,
+      authors: item.authors || [],
+      year: item.year || null,
+      platform: item.source || "Unknown",
+      source: item.source || "Unknown",
       url: item.url,
+      curl: item.url,
+      label: `${item.title} • ${item.source} • ${item.recruitingStatus || "UNKNOWN"}`,
       rank: item.score || 0,
       type: "trial",
       snippet: item.snippet || item.eligibilityCriteria?.slice(0, 120) || "",
@@ -41,6 +58,39 @@ function formatRankedLinks(publications = [], clinicalTrials = []) {
 
   return links;
 }
+
+// function formatQuoteItems(publications = []) {
+//   return publications.map((item) => ({
+//     quote: item.snippet || item.abstract || "No summary snippet available.",
+//     title: item.title,
+//     url: item.url,
+//     source: item.source,
+//     rank: item.score || 0,
+//   }));
+// }
+
+// function formatRankedLinks(publications = [], clinicalTrials = []) {
+//   const links = [
+//     ...publications.map((item) => ({
+//       label: `${item.title} • ${item.source}`,
+//       url: item.url,
+//       rank: item.score || 0,
+//       type: "publication",
+//       snippet: item.snippet || item.abstract?.slice(0, 120) || "",
+//     })),
+//     ...clinicalTrials.map((item) => ({
+//       label: `${item.title} • ${item.source} • ${item.recruitingStatus || "UNKNOWN"}`,
+//       url: item.url,
+//       rank: item.score || 0,
+//       type: "trial",
+//       snippet: item.snippet || item.eligibilityCriteria?.slice(0, 120) || "",
+//     })),
+//   ]
+//     .filter((item) => Boolean(item.url))
+//     .sort((a, b) => b.rank - a.rank);
+
+//   return links;
+// }
 
 router.post("/chat", authOptional, async (req, res, next) => {
   try {
