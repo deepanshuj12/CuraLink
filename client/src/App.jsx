@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import "./App.css";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000/api";
+const API_BASE = import.meta.env.VITE_API_BASE;
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token") || "");
