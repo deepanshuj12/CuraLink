@@ -23,6 +23,7 @@ function buildConversationContext(history = []) {
     .join("\n")}\n\n`;
 }
 
+
 function sanitizeStructuredAnswer(answer, allowedUrls = []) {
   if (!answer || typeof answer !== "string") return answer;
 
@@ -31,15 +32,16 @@ function sanitizeStructuredAnswer(answer, allowedUrls = []) {
   
   let result = answer;
   
+
   function isAllowedUrl(url) {
-    // Check exact match in allowed set
+
     if (allowedSet.has(url)) return true;
     
     try {
       const urlObj = new URL(url);
       const hostname = urlObj.hostname.toLowerCase();
       
-      // Check if hostname matches any allowed domain exactly or as subdomain
+
       return allowedDomains.some(domain => 
         hostname === domain || hostname.endsWith("." + domain)
       );
@@ -47,6 +49,7 @@ function sanitizeStructuredAnswer(answer, allowedUrls = []) {
       return false;
     }
   }
+
 
   result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
     const trimmedUrl = url.trim();
@@ -56,30 +59,60 @@ function sanitizeStructuredAnswer(answer, allowedUrls = []) {
     return text; 
   });
 
+
   result = result.replace(/(https?:\/\/[^\s\)\]\}]+)/g, (match) => {
     let normalized = match.replace(/[\)\.\],;:!?\}]+$/, "").trim();
     if (isAllowedUrl(normalized)) {
-      return match; // Keep allowed URLs
+      return match; 
     }
     return ""; 
   });
 
   return result;
 }
+
 // function sanitizeStructuredAnswer(answer, allowedUrls = []) {
 //   if (!answer || typeof answer !== "string") return answer;
 
-//   const allowedSet = new Set(allowedUrls.filter(Boolean));
-//   const urlRegex = /(https?:\/\/[^\s)]+)/g;
+//   const allowedSet = new Set(allowedUrls.filter(Boolean).map(url => url.trim()));
+//   const allowedDomains = ["pubmed.ncbi.nlm.nih.gov", "ncbi.nlm.nih.gov", "openalex.org", "clinicaltrials.gov"];
+  
+//   let result = answer;
+  
+//   function isAllowedUrl(url) {
 
-//   return answer.replace(urlRegex, (match) => {
-//     const normalized = match.replace(/[\)\.\],;:!?]+$/, "");
-//     if (allowedSet.has(normalized)) return match;
-//     if (normalized.includes("pubmed.ncbi.nlm.nih.gov") || normalized.includes("ncbi.nlm.nih.gov") || normalized.includes("openalex.org") || normalized.includes("clinicaltrials.gov")) {
-//       return match;
+//     if (allowedSet.has(url)) return true;
+    
+//     try {
+//       const urlObj = new URL(url);
+//       const hostname = urlObj.hostname.toLowerCase();
+      
+
+//       return allowedDomains.some(domain => 
+//         hostname === domain || hostname.endsWith("." + domain)
+//       );
+//     } catch (e) {
+//       return false;
 //     }
-//     return "";
+//   }
+
+//   result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
+//     const trimmedUrl = url.trim();
+//     if (isAllowedUrl(trimmedUrl)) {
+//       return match; 
+//     }
+//     return text; 
 //   });
+
+//   result = result.replace(/(https?:\/\/[^\s\)\]\}]+)/g, (match) => {
+//     let normalized = match.replace(/[\)\.\],;:!?\}]+$/, "").trim();
+//     if (isAllowedUrl(normalized)) {
+//       return match; // Keep allowed URLs
+//     }
+//     return ""; 
+//   });
+
+//   return result;
 // }
 
 async function generateStructuredAnswer(context, publications, trials) {
