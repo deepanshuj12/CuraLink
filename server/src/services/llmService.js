@@ -41,19 +41,12 @@ function sanitizeStructuredAnswer(answer, allowedUrls = []) {
   return answer.replace(urlRegex, (match) => {
     const cleaned = normalize(match);
 
+  
     if (allowedSet.has(cleaned)) {
-      return cleaned; // ensures valid clickable link
-    }
-
-    if (
-      cleaned.includes("pubmed.ncbi.nlm.nih.gov") ||
-      cleaned.includes("ncbi.nlm.nih.gov") ||
-      cleaned.includes("openalex.org") ||
-      cleaned.includes("clinicaltrials.gov")
-    ) {
       return cleaned;
     }
 
+   
     return "";
   });
 }
