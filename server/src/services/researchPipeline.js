@@ -104,10 +104,38 @@ async function runResearchPipeline(context) {
   }
 
 
+
+
+
+
+   const normalizedPublications = finalPublications.map((item) => ({
+    ...item,
+    platform: item.source || "Unknown",
+    source: item.source || "Unknown",
+    curl: item.url || null,
+  }));
+
+  const normalizedTrials = topTrials.map((item) => ({
+    ...item,
+    platform: item.source || "Unknown",
+    source: item.source || "Unknown",
+    curl: item.url || null,
+  }));
+
+
+
+
+
+
+  
+
+
   const answer = await generateStructuredAnswer(
     context,
-    finalPublications.slice(0, 5),
-    topTrials.slice(0, 3)
+    // finalPublications.slice(0, 5),
+    // topTrials.slice(0, 3)
+    normalizedPublications.slice(0, 5),
+    normalizedTrials.slice(0, 3)
   );
 
   const result = {
@@ -123,8 +151,10 @@ async function runResearchPipeline(context) {
       pubmed: pubmedRaw.length ? "ok" : "empty",
       clinicalTrials: trialsRaw.length ? "ok" : "empty",
     },
-    publications: finalPublications,
-    clinicalTrials: topTrials,
+    // publications: finalPublications,
+    // clinicalTrials: topTrials,
+    publications: normalizedPublications,
+    clinicalTrials: normalizedTrials,
     answer,
   };
 
