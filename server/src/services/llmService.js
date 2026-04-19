@@ -27,17 +27,48 @@ function sanitizeStructuredAnswer(answer, allowedUrls = []) {
   if (!answer || typeof answer !== "string") return answer;
 
   const allowedSet = new Set(allowedUrls.filter(Boolean));
-  const urlRegex = /(https?:\/\/[^\s)]+)/g;
+  const allowedDomains = ["pubmed.ncbi.nlm.nih.gov", "ncbi.nlm.nih.gov", "openalex.org", "clinicaltrials.gov"];
+  
+  // Strict URL regex - stops at whitespace, punctuation, or closing brackets
+  const urlRegex = /(https?:\/\/[^\s\)\]\}]+)/g;
 
   return answer.replace(urlRegex, (match) => {
-    const normalized = match.replace(/[\)\.\],;:!?]+$/, "");
+
+    let normalized = match.replace(/[\)\.\],;:!?\}]+$/, "");
+
     if (allowedSet.has(normalized)) return match;
-    if (normalized.includes("pubmed.ncbi.nlm.nih.gov") || normalized.includes("ncbi.nlm.nih.gov") || normalized.includes("openalex.org") || normalized.includes("clinicaltrials.gov")) {
-      return match;
+
+    try {
+      const url = new URL(normalized);
+      const hostname = url.hostname;
+      
+      if (allowedDomains.some(domain => hostname === domain || hostname.endsWith("." + domain))) {
+        return match;
+      }
+    } catch (e) {
+
+      return "";
     }
+    
+
     return "";
   });
 }
+// function sanitizeStructuredAnswer(answer, allowedUrls = []) {
+//   if (!answer || typeof answer !== "string") return answer;
+
+//   const allowedSet = new Set(allowedUrls.filter(Boolean));
+//   const urlRegex = /(https?:\/\/[^\s)]+)/g;
+
+//   return answer.replace(urlRegex, (match) => {
+//     const normalized = match.replace(/[\)\.\],;:!?]+$/, "");
+//     if (allowedSet.has(normalized)) return match;
+//     if (normalized.includes("pubmed.ncbi.nlm.nih.gov") || normalized.includes("ncbi.nlm.nih.gov") || normalized.includes("openalex.org") || normalized.includes("clinicaltrials.gov")) {
+//       return match;
+//     }
+//     return "";
+//   });
+// }
 
 async function generateStructuredAnswer(context, publications, trials) {
   if (!process.env.GROQ_API_KEY) {
