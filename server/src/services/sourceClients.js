@@ -113,47 +113,7 @@ async function fetchPubMed(query, retmax = 120) {
   }
 }
 
-// async function fetchClinicalTrials(condition, query, pageSize = 100) {
-//   try {
-//     const response = await http.get("https://clinicaltrials.gov/api/v2/studies", {
-//       params: {
-//         "query.cond": condition,
-//         "query.term": query,
-//         "filter.overallStatus": "RECRUITING",
-//         pageSize,
-//         format: "json",
-//       },
-//     });
-//     const studies = response.data?.studies || [];
-//     return studies.map((study) => {
-//       const proto = study.protocolSection || {};
-//       const ident = proto.identificationModule || {};
-//       const status = proto.statusModule || {};
-//       const contacts = proto.contactsLocationsModule || {};
-//       const eligibility = proto.eligibilityModule || {};
-//       const firstLocation = contacts?.locations?.[0];
-//       const centralContact = contacts?.centralContacts?.[0];
-//       return {
-//         id: ident.nctId || ident.orgStudyId || ident.briefTitle,
-//         title: ident.briefTitle || "Untitled Trial",
-//         recruitingStatus: status.overallStatus || "UNKNOWN",
-//         eligibilityCriteria: eligibility.eligibilityCriteria || "Not listed",
-//         location: firstLocation
-//           ? [firstLocation.city, firstLocation.state, firstLocation.country].filter(Boolean).join(", ")
-//           : "Not listed",
-//         contact: centralContact
-//           ? [centralContact.name, centralContact.phone, centralContact.email].filter(Boolean).join(" | ")
-//           : "Not listed",
-//         source: "ClinicalTrials.gov",
-//         url: ident.nctId ? `https://clinicaltrials.gov/study/${ident.nctId}` : "",
-//         snippet: eligibility.eligibilityCriteria?.slice(0, 260) || ident.briefTitle || "",
-//       };
-//     });
-//   } catch (error) {
-//     console.error("ClinicalTrials fetch failed:", error.message);
-//     return [];
-//   }
-// }
+
 async function fetchClinicalTrials(condition, query, pageSize = 100) {
   try {
     const response = await http.get("https://clinicaltrials.gov/api/v2/studies", {
@@ -186,7 +146,7 @@ async function fetchClinicalTrials(condition, query, pageSize = 100) {
 
         title: ident.briefTitle || "Untitled Trial",
 
-        // ✅ ADD ABSTRACT (important for ranking + LLM reasoning)
+
         abstract: description.briefSummary || "",
 
         snippet:
@@ -195,10 +155,10 @@ async function fetchClinicalTrials(condition, query, pageSize = 100) {
           ident.briefTitle ||
           "",
 
-        // ✅ ADD AUTHORS (LLM expects this format)
+
         authors: ["ClinicalTrials.gov"],
 
-        // ✅ ADD YEAR (helps rankingService)
+
         year: status.startDateStruct?.year || null,
 
         recruitingStatus: status.overallStatus || "UNKNOWN",
@@ -220,7 +180,7 @@ async function fetchClinicalTrials(condition, query, pageSize = 100) {
 
         source: "ClinicalTrials.gov",
 
-        // ✅ CRITICAL FIX (you already had this, just make it safer)
+
         url: nctId ? `https://clinicaltrials.gov/study/${nctId}` : null,
       };
     });
