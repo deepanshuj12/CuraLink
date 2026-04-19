@@ -26,33 +26,45 @@ function buildConversationContext(history = []) {
 function sanitizeStructuredAnswer(answer, allowedUrls = []) {
   if (!answer || typeof answer !== "string") return answer;
 
-  const allowedSet = new Set(allowedUrls.filter(Boolean));
+  const allowedSet = new Set(allowedUrls.filter(Boolean).map(url => url.trim()));
   const allowedDomains = ["pubmed.ncbi.nlm.nih.gov", "ncbi.nlm.nih.gov", "openalex.org", "clinicaltrials.gov"];
   
-  // Strict URL regex - stops at whitespace, punctuation, or closing brackets
-  const urlRegex = /(https?:\/\/[^\s\)\]\}]+)/g;
-
-  return answer.replace(urlRegex, (match) => {
-
-    let normalized = match.replace(/[\)\.\],;:!?\}]+$/, "");
-
-    if (allowedSet.has(normalized)) return match;
-
-    try {
-      const url = new URL(normalized);
-      const hostname = url.hostname;
-      
-      if (allowedDomains.some(domain => hostname === domain || hostname.endsWith("." + domain))) {
-        return match;
-      }
-    } catch (e) {
-
-      return "";
-    }
+  let result = answer;
+  
+  function isAllowedUrl(url) {
+    // Check exact match in allowed set
+    if (allowedSet.has(url)) return true;
     
+    try {
+      const urlObj = new URL(url);
+      const hostname = urlObj.hostname.toLowerCase();
+      
+      // Check if hostname matches any allowed domain exactly or as subdomain
+      return allowedDomains.some(domain => 
+        hostname === domain || hostname.endsWith("." + domain)
+      );
+    } catch (e) {
+      return false;
+    }
+  }
 
-    return "";
+  result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
+    const trimmedUrl = url.trim();
+    if (isAllowedUrl(trimmedUrl)) {
+      return match; 
+    }
+    return text; 
   });
+
+  result = result.replace(/(https?:\/\/[^\s\)\]\}]+)/g, (match) => {
+    let normalized = match.replace(/[\)\.\],;:!?\}]+$/, "").trim();
+    if (isAllowedUrl(normalized)) {
+      return match; // Keep allowed URLs
+    }
+    return ""; 
+  });
+
+  return result;
 }
 // function sanitizeStructuredAnswer(answer, allowedUrls = []) {
 //   if (!answer || typeof answer !== "string") return answer;
@@ -77,6 +89,12 @@ async function generateStructuredAnswer(context, publications, trials) {
 
   const systemPrompt = `
 You are a medical research assistant.
+ CRITICAL - MUST FOLLOW:
+- ONLY use URLs from the provided sources list below
+- If you generate ANY URL not in provided sources, it will be removed
+- Do NOT generate, guess, or hallucinate URLs
+- Do NOT mention Wikipedia, WebMD, Mayo Clinic, Google, or any general websites
+- Do NOT generate URLs for journals you don't have in the provided sources
 
 STRICT RULES:
 - Do NOT use the patient's name or location as a generic example.
