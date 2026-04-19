@@ -100,7 +100,7 @@ STRICT RULES:
 - ALWAYS include only the actual URLs from the provided sources in the relevant section.
 - Write full sentences and do not cut off content mid-sentence or mid-reference.
 - If you cannot back a sentence with a provided source, omit it.
-- If clinical trials are available, include trial links in addition to the 6-link cap.
+- If clinical trials are available, include links .
 - Don't ask the user to look for clinical trials themselves; if none are found, say so.
 Output EXACTLY:
 
