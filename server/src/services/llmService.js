@@ -26,45 +26,18 @@ function buildConversationContext(history = []) {
 function sanitizeStructuredAnswer(answer, allowedUrls = []) {
   if (!answer || typeof answer !== "string") return answer;
 
-  const normalize = (url) =>
-    url
-      ?.replace(/[\)\]\.,;:!?]+$/, "")
-      ?.replace(/\/+$/, "")
-      ?.trim();
-
-  const allowedSet = new Set(
-    allowedUrls.filter(Boolean).map(normalize)
-  );
-
+  const allowedSet = new Set(allowedUrls.filter(Boolean));
   const urlRegex = /(https?:\/\/[^\s)]+)/g;
 
   return answer.replace(urlRegex, (match) => {
-    const cleaned = normalize(match);
-
-  
-    if (allowedSet.has(cleaned)) {
-      return cleaned;
+    const normalized = match.replace(/[\)\.\],;:!?]+$/, "");
+    if (allowedSet.has(normalized)) return match;
+    if (normalized.includes("pubmed.ncbi.nlm.nih.gov") || normalized.includes("ncbi.nlm.nih.gov") || normalized.includes("openalex.org") || normalized.includes("clinicaltrials.gov")) {
+      return match;
     }
-
-   
     return "";
   });
 }
-// function sanitizeStructuredAnswer(answer, allowedUrls = []) {
-//   if (!answer || typeof answer !== "string") return answer;
-
-//   const allowedSet = new Set(allowedUrls.filter(Boolean));
-//   const urlRegex = /(https?:\/\/[^\s)]+)/g;
-
-//   return answer.replace(urlRegex, (match) => {
-//     const normalized = match.replace(/[\)\.\],;:!?]+$/, "");
-//     if (allowedSet.has(normalized)) return match;
-//     if (normalized.includes("pubmed.ncbi.nlm.nih.gov") || normalized.includes("ncbi.nlm.nih.gov") || normalized.includes("openalex.org") || normalized.includes("clinicaltrials.gov")) {
-//       return match;
-//     }
-//     return "";
-//   });
-// }
 
 async function generateStructuredAnswer(context, publications, trials) {
   if (!process.env.GROQ_API_KEY) {
@@ -82,10 +55,10 @@ STRICT RULES:
 - Use neutral phrasing such as "people with diabetes" or "patients with lung cancer" when describing the condition.
 - Use simple plain text section headings like "Condition Overview:" and "Research Insights:".
 - Write full sentences and do not cut off content mid-sentence or mid-reference.
-- ALWAYS include only the actual URLs from the provided sources in the relevant section.
+- ALWAYS include only the actual URLs from the provided sources.
 - Do not invent journal names, sites, or citations.
 - Do not include any links or sources from outside the provided citations.
-- Allowed domains: openalex.org, pubmed.ncbi.nlm.nih.gov, ncbi.nlm.nih.gov, clinicaltrials.gov.
+- Only include URLs in Clinical Trials and Ranked Important Links section and nowhere else.
 - If you cannot back a sentence with a provided source, omit it.
 - Use up to 6 citations total.
 - If clinical trials are available, include trial links in addition to the 6-link cap.
