@@ -6,7 +6,7 @@ Full-stack prototype that retrieves research from OpenAlex, PubMed, and Clinical
 
 - `client` - React + Vite chat interface with structured medical context input.
 - `server` - Express API, retrieval pipeline, ranking layer, and MongoDB conversation memory.
-- LLM - Ollama (`llama3.1:8b` by default), no OpenAI/Gemini APIs.
+- LLM - Open SOurce Groq Api (llama-3.3-70b-versatile).
 
 ## Features implemented
 
