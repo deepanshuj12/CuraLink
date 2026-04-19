@@ -407,25 +407,50 @@ function App() {
                     <p className="role-label">{message.role === "user" ? "You" : "Assistant"}</p>
                     {renderMessageContent(message)}
                     {message.role === "assistant" && message.meta ? (
-                      <div className="links">
+                        // <div className="links">
+                        //   <h4>Ranked Important Links</h4>
+                        //   <ol>
+                        //     {message.meta.rankedLinks.map((link) => (
+                        //       <li key={`${link.url}-${link.label}`}>
+                        //         <a href={link.url} target="_blank" rel="noreferrer">
+                        //           {link.label}
+                        //         </a>
+                        //         <div className="link-meta">
+                        //           {link.authors?.length ? <span><strong>Authors:</strong> {link.authors.join(", ")}</span> : null}
+                        //           {link.year ? <span><strong>Year:</strong> {link.year}</span> : null}
+                        //           {link.platform ? <span><strong>Platform:</strong> {link.platform}</span> : null}
+                        //           {link.source ? <span><strong>Source:</strong> {link.source}</span> : null}
+                        //           {link.curl ? <span><strong>URL:</strong> <a href={link.curl} target="_blank" rel="noreferrer">{link.curl}</a></span> : null}
+                        //         </div>
+                        //         {link.snippet ? <p className="link-snippet">{link.snippet}</p> : null}
+                        //       </li>
+                        //     ))}
+                        //   </ol>
+                        // </div>
+                  <div className="links">
                         <h4>Ranked Important Links</h4>
-                        <ol>
+                        <div className="link-grid">
                           {message.meta.rankedLinks.map((link) => (
-                            <li key={`${link.url}-${link.label}`}>
-                              <a href={link.url} target="_blank" rel="noreferrer">
-                                {link.label}
-                              </a>
-                              <div className="link-meta">
-                                {link.authors?.length ? <span><strong>Authors:</strong> {link.authors.join(", ")}</span> : null}
-                                {link.year ? <span><strong>Year:</strong> {link.year}</span> : null}
-                                {link.platform ? <span><strong>Platform:</strong> {link.platform}</span> : null}
-                                {link.source ? <span><strong>Source:</strong> {link.source}</span> : null}
-                                {link.curl ? <span><strong>URL:</strong> <a href={link.curl} target="_blank" rel="noreferrer">{link.curl}</a></span> : null}
+                            <article key={`${link.url}-${link.label}`} className="link-card">
+                              <div className="link-card-header">
+                                <a href={link.url} target="_blank" rel="noreferrer">
+                                  {link.title || link.label}
+                                </a>
                               </div>
+                              <div className="link-card-meta">
+                                {link.platform ? <span className="meta-pill">{link.platform}</span> : null}
+                                {link.source && link.source !== link.platform ? <span className="meta-pill">{link.source}</span> : null}
+                                {link.year ? <span className="meta-pill">{link.year}</span> : null}
+                                {link.rank !== undefined ? <span className="meta-pill">Score: {link.rank.toFixed ? link.rank.toFixed(2) : link.rank}</span> : null}
+                              </div>
+                              {link.authors?.length ? (
+                                <p className="link-authors">Authors: {link.authors.slice(0, 4).join(", ")}{link.authors.length > 4 ? " ..." : ""}</p>
+                              ) : null}
+                              {link.curl ? <p className="link-url">{link.curl}</p> : null}
                               {link.snippet ? <p className="link-snippet">{link.snippet}</p> : null}
-                            </li>
+                            </article>
                           ))}
-                        </ol>
+                        </div>
                       </div>
                     ) : null}
                   </div>
