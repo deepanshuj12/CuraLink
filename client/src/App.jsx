@@ -152,14 +152,27 @@ function App() {
       setConversationId(data.conversationId);
       localStorage.setItem("conversationId", data.conversationId);
 
-      const topPublicationQuotes = (data.topPublicationQuotes || []).slice(0, 3).map((item) => ({
+      // const topPublicationQuotes = (data.topPublicationQuotes || []).slice(0, 3).map((item) => ({
+      //   quote: item.quote || "No summary snippet available.",
+      //   title: item.title,
+      //   url: item.url,
+      //   rank: item.rank || 0,
+      // }));
+
+       const topPublicationQuotes = (data.topPublicationQuotes || []).slice(0, 3).map((item) => ({
         quote: item.quote || "No summary snippet available.",
         title: item.title,
+        authors: item.authors || [],
+        year: item.year || null,
+        platform: item.platform || item.source || "Unknown",
+        source: item.source || item.platform || "Unknown",
         url: item.url,
+        curl: item.curl || item.url,
         rank: item.rank || 0,
       }));
 
-      const rankedLinks = (data.rankedLinks || []).slice(0, 3);
+      // const rankedLinks = (data.rankedLinks || []).slice(0, 3);
+      const rankedLinks = data.rankedLinks || [];
       const assistantText = `${data.answer || "No answer available."}${data.correctedDisease && data.correctedDisease !== form.disease ? `\n\n(Note: corrected disease term to "${data.correctedDisease}" for a more relevant search.)` : ""}`;
 
       setChat((prev) => [
@@ -402,6 +415,13 @@ function App() {
                               <a href={link.url} target="_blank" rel="noreferrer">
                                 {link.label}
                               </a>
+                              <div className="link-meta">
+                                {link.authors?.length ? <span><strong>Authors:</strong> {link.authors.join(", ")}</span> : null}
+                                {link.year ? <span><strong>Year:</strong> {link.year}</span> : null}
+                                {link.platform ? <span><strong>Platform:</strong> {link.platform}</span> : null}
+                                {link.source ? <span><strong>Source:</strong> {link.source}</span> : null}
+                                {link.curl ? <span><strong>URL:</strong> <a href={link.curl} target="_blank" rel="noreferrer">{link.curl}</a></span> : null}
+                              </div>
                               {link.snippet ? <p className="link-snippet">{link.snippet}</p> : null}
                             </li>
                           ))}
