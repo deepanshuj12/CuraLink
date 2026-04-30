@@ -129,7 +129,17 @@ router.post("/chat", authOptional, async (req, res, next) => {
       conversationHistory: conversation.messages.slice(-6), // Last 6 messages for context
     };
 
-    conversation.messages.push({ role: "user", content: query, meta: { effectiveContext } });
+    // conversation.messages.push({ role: "user", content: query, meta: { effectiveContext } });
+        let userContent = query;
+    if (inputStyle === 'full') {
+      const diseaseText = effectiveContext.disease ? ` [Disease: ${effectiveContext.disease}]` : "";
+      const patientText = effectiveContext.patientName ? ` [Patient: ${effectiveContext.patientName}]` : "";
+      const locationText = effectiveContext.location ? ` [Location: ${effectiveContext.location}]` : "";
+      userContent = `${query}${diseaseText}${patientText}${locationText}`;
+    }
+
+    conversation.messages.push({ role: "user", content: userContent, meta: { effectiveContext } });
+
     const pipelineResult = await runResearchPipeline(effectiveContext);
     const topPublicationQuotes = formatQuoteItems(pipelineResult.publications);
     const rankedLinks = formatRankedLinks(pipelineResult.publications, pipelineResult.clinicalTrials);
