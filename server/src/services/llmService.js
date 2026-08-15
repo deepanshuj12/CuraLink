@@ -16,7 +16,7 @@ Snippet: ${(source.snippet || source.abstract || "").slice(0, 120)}`;
 function buildConversationContext(history = []) {
   if (!history.length) return "";
 
-  const trimmed = history.slice(-2);
+  const trimmed = history.slice(-4);
 
   return `Previous conversation:\n${trimmed
     .map((m) => `${m.role}: ${m.content}`)
@@ -229,7 +229,7 @@ Instructions:
   reasoning_format: "hidden",
   temperature: 0.4,
   top_p: 0.8,
-  max_tokens: 1000,
+  max_tokens: 800,
 });
 //     const completion = await groq.chat.completions.create({
 //       model: "llama-3.3-70b-versatile",
