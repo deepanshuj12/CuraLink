@@ -230,7 +230,7 @@ Instructions:
   temperature: 0.4,
   top_p: 0.8,
   max_tokens: 1000,
-// });
+});
 //     const completion = await groq.chat.completions.create({
 //       model: "llama-3.3-70b-versatile",
 //       // model: "qwen/qwen3.6-27b",
