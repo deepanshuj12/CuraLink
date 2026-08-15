@@ -220,16 +220,28 @@ Instructions:
 
   try {
     const completion = await groq.chat.completions.create({
-      // model: "llama-3.3-70b-versatile",
-      model: "qwen/qwen3.6-27b",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-      temperature: 0.6,
-      top_p: 0.9,
-      max_tokens: 600,
-    });
+  model: "qwen/qwen3.6-27b",
+  messages: [
+    { role: "system", content: systemPrompt },
+    { role: "user", content: userPrompt },
+  ],
+  reasoning_effort: "none",
+  reasoning_format: "hidden",
+  temperature: 0.4,
+  top_p: 0.8,
+  max_tokens: 1000,
+});
+    // const completion = await groq.chat.completions.create({
+    //   // model: "llama-3.3-70b-versatile",
+    //   model: "qwen/qwen3.6-27b",
+    //   messages: [
+    //     { role: "system", content: systemPrompt },
+    //     { role: "user", content: userPrompt },
+    //   ],
+    //   temperature: 0.6,
+    //   top_p: 0.9,
+    //   max_tokens: 600,
+    // });
 
     const rawAnswer = completion.choices[0].message.content;
     const allowedUrls = [...publications, ...trials].map((source) => source.url).filter(Boolean);
